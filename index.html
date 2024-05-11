@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Voice Test</h1>
+    <button class="record-btn">Start Reord</button>
+    <button class="stop-btn">Stop Reord</button>
+    <audio controls id="speech-rec" src=""></audio>
+    <input type="file" accept="audio/*" id="uploadFile" />
+    <button class="request-btn">Send Request</button>
+    <h4>Response:</h4>
+    <div class="res-txt"></div>
+    <script type="text/javascript">
+      const requestBtn = document.querySelector(".request-btn");
+      requestBtn.addEventListener("click", sendVoice);
+      function sendVoice() {
+        //const music = new Audio('sample-5.mp3');
+        //music.play();
+        // const  bufferToStream  = (buffer) => {
+        //     return  Readable.from(buffer);
+        // }
+        //const  audioStream  =  bufferToStream(audioFile.buffer);
+        const input = document.querySelector("#uploadFile");
+        const curFiles = input.files[0];
+        console.log(curFiles);
+        let fd = new FormData();
+        fd.append("file", curFiles);
+        fd.append("model", "whisper-1");
+        fd.append("response_format", "json");
+        const config = {
+          headers: {
+            "Content-Type": `multipart/form-data`,
+            Authorization: `Bearer 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`,
+          },
+        };
+
+        const resTxt = document.querySelector(".res-txt");
+        axios
+          .post("https://api.openai.com/v1/audio/transcriptions", fd, config)
+          .then((res) => {
+            console.log(res);
+            console.log(res.data.text);
+            if (res.data.text) {
+              resTxt.textContent = res.data.text;
+            } else {
+              resTxt.textContent = `There exists some error. Please try again.`;
+            }
+          })
+          .catch((err) => {
+            console.log("catch error");
+            console.log(err.response.data.message);
+            resTxt.textContent = `There exists some error, request fail.`;
+          });
+      }
+
+      //confirm web support userMedia
+      if (navigator.mediaDevices) {
+        console.log("getUserMedia supported.");
+      }
+      var mediaRecorder;
+      let chunks = [];
+
+      const blobToBase64 = (blob) => {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64data = reader?.result?.split(",")[1];
+        };
+        reader.readAsDataURL(blob);
+      };
+
+      const sendRecording = (audioData) => {
+        const audioSrc = URL.createObjectURL(audioData);
+        document.querySelector("#speech-rec").src = audioSrc;
+
+        if (audioData.size > 0) {
+          chunks.push(audioData);
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          //const url = URL.createObjectURL(blob);
+          //blobToBase64(blob);
+          whisperCall(blob);
+        }
+      };
+
+      function whisperCall(blob) {
+        let fd = new FormData();
+        fd.append("file", blob, "audio.webm");
+        fd.append("model", "whisper-1");
+        fd.append("response_format", "json");
+        const config = {
+          headers: {
+            "Content-Type": `multipart/form-data`,
+            Authorization: `Bearer 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`,
+          },
+        };
+
+        const resTxt = document.querySelector(".res-txt");
+        axios
+          .post("https://api.openai.com/v1/audio/transcriptions", fd, config)
+          .then((res) => {
+            console.log(res);
+            console.log(res.data.text);
+            if (res.data.text) {
+              resTxt.textContent = res.data.text;
+            } else {
+              resTxt.textContent = `There exists some error. Please try again.`;
+            }
+          })
+          .catch((err) => {
+            console.log("catch error");
+            console.log(err.response.data.message);
+            resTxt.textContent = `There exists some error, request fail.`;
+          });
+      }
+
+      //function for recording voice
+      const record = async () => {
+        if (navigator.getUserMedia) {
+          console.log("Starting to record");
+          // Get audio stream
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false,
+          });
+          // Generate the media recorder with stream from media devices
+          // Starting position is paused recording
+          mediaRecorder = new MediaRecorder(stream);
+          // Also pass the stream to hark to create speaking events
+          var speech = hark(stream, {});
+          // Start the recording when hark recognizes someone is speakign in the mic
+          speech.on("speaking", function () {
+            console.log("Speaking!");
+            chunks = [];
+            mediaRecorder.start();
+          });
+          // When hark recognizes the speaking has stopped we can stop recording
+          // The stop action will generate ondataavailable() to be triggered
+          speech.on("stopped_speaking", function () {
+            console.log("Not Speaking");
+            if (mediaRecorder.state === "recording") mediaRecorder.stop();
+          });
+          //
+          mediaRecorder.ondataavailable = (e) => {
+            sendRecording(e.data); /*.then((newMessage) => {
+               console.log("send");
+             });*/
+          };
+        } else {
+          console.log("recording not supported");
+        }
+      };
+
+      const stopRecording = async () => {
+        if (mediaRecorder) {
+          if (mediaRecorder.state === "recording") mediaRecorder.stop();
+          mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+        }
+      };
+
+      const recordBtn = document.querySelector(".record-btn");
+      const stopBtn = document.querySelector(".stop-btn");
+      recordBtn.addEventListener("click", record);
+      stopBtn.addEventListener("click", stopRecording);
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.1/axios.min.js"
+      integrity="sha512-m9S8W3a9hhBHPFAbEIaG7J9P92dzcAWwM42VvJp5n1/M599ldK6Z2st2SfJGsX0QR4LfCVr681vyU5vW8d218w=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/hark@1.2.3/hark.bundle.min.js"></script>
+  </body>
+</html>
