@@ -2,6 +2,8 @@
 This is a simple speech-to-text example, combining web api: MediaRecorder with OpenAI Whisper stt api.
 The main purpose: Sending a voice file to the OpenAI Whisper stt to recognize the speech into text.
 
+![Speech-To-Text Sample](image.png)
+
 ## Key points
 * First confirm web support userMedia or not
 * If it supports, using mediaRecorder to record the speeking
@@ -9,13 +11,9 @@ The main purpose: Sending a voice file to the OpenAI Whisper stt to recognize th
 * Hark plugin plays a role to identify the pause when we speak
 
 
-
 ## Plugins:
 * Axios - https://github.com/axios/axios
 * Hark - https://github.com/latentflip/hark
-
-
-![Speech-To-Text Sample](image.png)
 
 
 ## Reference
