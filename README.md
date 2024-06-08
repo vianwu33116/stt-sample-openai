@@ -15,6 +15,9 @@ The main purpose: Sending a voice file to the OpenAI Whisper stt to recognize th
 * Hark - https://github.com/latentflip/hark
 
 
+![Speech-To-Text Sample](image.png)
+
+
 ## Reference
 * [AI Audio Conversations Using OpenAI Whisper](https://medium.com/@david.richards.tech/ai-audio-conversations-with-openai-whisper-3c730a9c7123)
 * [Speech to text-OpenAI API](https://platform.openai.com/docs/guides/speech-to-text)
